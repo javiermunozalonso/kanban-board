@@ -137,6 +137,7 @@ Every change to a `Card`'s mutable fields (`title`, `description`, `column_id`, 
 | Method | Endpoint | Response | Description |
 |--------|----------|----------|-------------|
 | `GET` | `/api/dashboard` | `GeneralDashboard` | Aggregated stats for all active boards |
+| `GET` | `/api/dashboard/global-board` | `GlobalBoard` | All cards from active boards grouped by column title |
 
 ### 3.5 Dashboard Response Shapes
 
@@ -174,6 +175,7 @@ graph TD
     App --> Router
     Router --> BoardListPage
     Router --> BoardDetailPage
+    Router --> GlobalBoardPage
     Router --> DashboardPage
 
     BoardListPage --> BoardCard
@@ -185,6 +187,9 @@ graph TD
     Column --> CreateCardModal
     CardItem --> CardDetailModal
 
+    GlobalBoardPage --> GlobalColumn["Read-Only Column"]
+    GlobalColumn --> GlobalCard["Card (with board label)"]
+
     DashboardPage --> GlobalCharts["Global Charts (Recharts)"]
 ```
 
@@ -192,7 +197,9 @@ graph TD
 
 - **Drag & Drop**: `@dnd-kit` — cards draggable between columns; columns reorderable
 - **Column collapse**: click header chevron → hides card list, shows card count badge
+- **Column color coding**: each column type has a distinct accent color (purple, blue, green, red, gray) applied to column headers and card left borders
 - **Audit trail**: `CardDetailModal` shows timestamped change log
+- **Global Board**: read-only kanban showing all cards across active boards, grouped by column type
 
 ---
 
@@ -250,10 +257,12 @@ kanban-board/
 │       ├── styles/
 │       │   └── index.css
 │       ├── services/
-│       │   └── api.js
+│       │   ├── api.js
+│       │   └── columnColors.js
 │       ├── pages/
 │       │   ├── BoardListPage.jsx
 │       │   ├── BoardDetailPage.jsx
+│       │   ├── GlobalBoardPage.jsx
 │       │   └── DashboardPage.jsx
 │       └── components/
 │           ├── BoardCard.jsx

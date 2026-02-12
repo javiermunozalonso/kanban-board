@@ -34,6 +34,7 @@
 - [x] Add request validation (Pydantic schemas)
 - [x] Add error handling middleware
 - [x] Add CORS configuration
+- [x] Implement Global Board endpoint (`/api/dashboard/global-board`)
 
 ## Phase 4: Backend — Tests
 
@@ -65,10 +66,13 @@
 - [x] Card audit trail view
 - [x] Card deletion
 
-## Phase 8: Frontend — Dashboards
+## Phase 8: Frontend — Dashboards & Views
 
 - [x] Atomic dashboard per board
 - [x] General dashboard for all active boards
+- [x] Global Board page (all cards from active boards grouped by column)
+- [x] Column-based card border colors (purple=Backlog, blue=WIP, green=Done, red=Stopped, gray=Archive)
+- [x] Column header color accents
 
 ## Phase 9: MCP Tool
 

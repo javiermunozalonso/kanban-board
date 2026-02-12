@@ -53,7 +53,21 @@ A unified view across all active boards:
 - Per-board summary (total, done, in-progress)
 - Global card distribution across column types
 
-### 2.6 MCP Tool (AI Integration)
+#### Global Board View
+
+A read-only kanban view aggregating all cards from every active board:
+
+- Cards grouped by column type (BACKLOG, WIP, DONE, STOPPED, ARCHIVE)
+- Each card shows its parent board name
+- Click a card to navigate to its board
+
+### 2.6 Visual Design
+
+- **Column color coding** — each column type has a distinct accent color (purple for Backlog, blue for WIP, green for Done, red for Stopped, gray for Archive)
+- Card left borders and column headers reflect their column color
+- Dark theme with glassmorphism and micro-animations
+
+### 2.7 MCP Tool (AI Integration)
 
 - All features available via a command-line MCP tool
 - Allows AI agents (e.g., Claude) to create boards, manage cards, and query dashboards programmatically
@@ -78,7 +92,9 @@ A unified view across all active boards:
 | US-12 | User | Collapse a column | I can focus on the columns that matter |
 | US-13 | User | View board analytics | I can assess a project's health |
 | US-14 | User | View overall analytics | I can get a birds-eye view of all work |
-| US-15 | AI Agent | Control boards via MCP | I can automate Kanban management |
+| US-15 | User | See all cards across boards in one view | I can get a global picture of all tasks |
+| US-16 | User | See color-coded columns | I can quickly identify card statuses visually |
+| US-17 | AI Agent | Control boards via MCP | I can automate Kanban management |
 
 ---
 
@@ -142,7 +158,7 @@ stateDiagram-v2
 - User authentication and multi-user collaboration
 - Real-time WebSocket updates
 - File attachments on cards
-- Labels / tags / color coding on cards
+- Labels / tags on cards
 - Due dates and reminders
 - Keyboard shortcuts
 - Mobile-optimized layout

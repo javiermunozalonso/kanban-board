@@ -1,8 +1,7 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { useState } from 'react';
 
-export default function CardItem({ card, onDelete, onViewDetail }) {
+export default function CardItem({ card, columnColor, onDelete, onViewDetail, boardLabel }) {
     const {
         attributes,
         listeners,
@@ -15,6 +14,7 @@ export default function CardItem({ card, onDelete, onViewDetail }) {
     const style = {
         transform: CSS.Transform.toString(transform),
         transition,
+        borderLeft: columnColor ? `3px solid ${columnColor}` : undefined,
     };
 
     return (
@@ -26,23 +26,32 @@ export default function CardItem({ card, onDelete, onViewDetail }) {
             className={`card-item ${isDragging ? 'dragging' : ''}`}
         >
             <div className="card-item-title">{card.title}</div>
+            {boardLabel && (
+                <div style={{ fontSize: '11px', color: 'var(--accent-purple-light)', marginBottom: '4px', fontWeight: 500 }}>
+                    📋 {boardLabel}
+                </div>
+            )}
             {card.description && <div className="card-item-desc">{card.description}</div>}
             <div className="card-actions">
-                <button
-                    className="btn-icon"
-                    onClick={(e) => { e.stopPropagation(); onViewDetail(card.id); }}
-                    title="View details"
-                >
-                    📋
-                </button>
-                <button
-                    className="btn-icon"
-                    onClick={(e) => { e.stopPropagation(); onDelete(card.id); }}
-                    title="Delete card"
-                    style={{ color: 'var(--accent-red)' }}
-                >
-                    🗑
-                </button>
+                {onViewDetail && (
+                    <button
+                        className="btn-icon"
+                        onClick={(e) => { e.stopPropagation(); onViewDetail(card.id); }}
+                        title="View details"
+                    >
+                        📋
+                    </button>
+                )}
+                {onDelete && (
+                    <button
+                        className="btn-icon"
+                        onClick={(e) => { e.stopPropagation(); onDelete(card.id); }}
+                        title="Delete card"
+                        style={{ color: 'var(--accent-red)' }}
+                    >
+                        🗑
+                    </button>
+                )}
             </div>
         </div>
     );

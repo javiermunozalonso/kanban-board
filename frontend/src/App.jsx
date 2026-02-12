@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, NavLink } from 'react-router-dom';
 import BoardListPage from './pages/BoardListPage';
 import BoardDetailPage from './pages/BoardDetailPage';
 import DashboardPage from './pages/DashboardPage';
+import GlobalBoardPage from './pages/GlobalBoardPage';
 import './styles/index.css';
 
 export default function App() {
@@ -15,6 +16,9 @@ export default function App() {
           <NavLink to="/" end className={({ isActive }) => isActive ? 'active' : ''}>
             Boards
           </NavLink>
+          <NavLink to="/global" className={({ isActive }) => isActive ? 'active' : ''}>
+            Global Board
+          </NavLink>
           <NavLink to="/dashboard" className={({ isActive }) => isActive ? 'active' : ''}>
             Dashboard
           </NavLink>
@@ -24,6 +28,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<BoardListPage />} />
         <Route path="/board/:boardId" element={<BoardDetailPage />} />
+        <Route path="/global" element={<GlobalBoardPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
       </Routes>
     </BrowserRouter>

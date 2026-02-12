@@ -31,7 +31,7 @@ class BoardResponse(BaseModel):
 
 
 class BoardDetailResponse(BoardResponse):
-    columns: list["ColumnResponse"] = []
+    columns: list["ColumnDetailResponse"] = []
 
 
 # --- Column ---

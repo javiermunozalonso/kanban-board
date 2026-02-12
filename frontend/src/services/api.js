@@ -59,4 +59,7 @@ export const deleteCard = (id) =>
 export const getGeneralDashboard = () =>
   api.get('/dashboard').then((r) => r.data);
 
+export const getGlobalBoard = () =>
+  api.get('/dashboard/global-board').then((r) => r.data);
+
 export default api;

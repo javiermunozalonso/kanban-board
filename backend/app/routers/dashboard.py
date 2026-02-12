@@ -1,4 +1,4 @@
-"""General dashboard endpoint aggregating all active boards."""
+"""General dashboard and global board endpoints."""
 
 from fastapi import APIRouter, Depends
 from sqlalchemy import select
@@ -65,3 +65,43 @@ async def get_general_dashboard(db: AsyncSession = Depends(get_db)):
         boards_summary=boards_summary,
         global_distribution=global_distribution,
     )
+
+
+@router.get("/global-board")
+async def get_global_board(db: AsyncSession = Depends(get_db)):
+    """Get all cards from active boards grouped by column title (global kanban view)."""
+    result = await db.execute(
+        select(Board)
+        .options(selectinload(Board.columns).selectinload(Column.cards))
+        .where(Board.status == "active")
+    )
+    boards = result.scalars().all()
+
+    # Group cards by column title across all boards
+    columns_map: dict[str, list[dict]] = {}
+    column_order = []
+
+    for board in boards:
+        for col in sorted(board.columns, key=lambda c: c.position):
+            if col.title not in columns_map:
+                columns_map[col.title] = []
+                column_order.append(col.title)
+            for card in col.cards:
+                columns_map[col.title].append({
+                    "id": card.id,
+                    "title": card.title,
+                    "description": card.description,
+                    "board_title": board.title,
+                    "board_id": board.id,
+                    "column_id": card.column_id,
+                    "position": card.position,
+                    "created_at": card.created_at.isoformat(),
+                    "updated_at": card.updated_at.isoformat(),
+                })
+
+    return {
+        "columns": [
+            {"title": title, "cards": columns_map.get(title, [])}
+            for title in column_order
+        ]
+    }

@@ -158,6 +158,7 @@ Endpoints:
 | Method | Path | Description |
 |--------|------|-------------|
 | `GET` | `/dashboard` | General dashboard (all active boards) |
+| `GET` | `/dashboard/global-board` | Global board view — all cards grouped by column title |
 
 #### [NEW] [tests/](file:///Users/jmunozal/projects/kanban-board/backend/tests/)
 
@@ -176,7 +177,7 @@ Vite + React project. Key dependencies: `react-router-dom`, `@dnd-kit/core`, `@d
 
 #### [NEW] [src/App.jsx](file:///Users/jmunozal/projects/kanban-board/frontend/src/App.jsx)
 
-Root component with routing: `/` → Board List, `/board/:id` → Board Detail, `/dashboard` → General Dashboard.
+Root component with routing: `/` → Board List, `/board/:id` → Board Detail, `/global` → Global Board, `/dashboard` → General Dashboard.
 
 #### [NEW] [src/styles/index.css](file:///Users/jmunozal/projects/kanban-board/frontend/src/styles/index.css)
 
@@ -201,12 +202,20 @@ General dashboard with charts for all active boards.
 #### [NEW] [src/components/](file:///Users/jmunozal/projects/kanban-board/frontend/src/components/)
 
 - `BoardCard.jsx` — Board card in list view
-- `Column.jsx` — Kanban column (collapsible)
-- `CardItem.jsx` — Card inside a column
+- `Column.jsx` — Kanban column (collapsible, color-coded header)
+- `CardItem.jsx` — Card inside a column (color-coded left border)
 - `CardDetailModal.jsx` — Card edit + audit trail
 - `BoardDashboard.jsx` — Atomic dashboard charts
 - `CreateBoardModal.jsx` — Board creation form
 - `CreateCardModal.jsx` — Card creation form
+
+#### [NEW] [src/pages/GlobalBoardPage.jsx](file:///Users/jmunozal/projects/kanban-board/frontend/src/pages/GlobalBoardPage.jsx)
+
+Global kanban view showing all cards from active boards grouped by column type. Clicking a card navigates to its board.
+
+#### [NEW] [src/services/columnColors.js](file:///Users/jmunozal/projects/kanban-board/frontend/src/services/columnColors.js)
+
+Centralized color mapping for column types: purple=Backlog, blue=WIP, green=Done, red=Stopped, gray=Archive.
 
 ---
 
@@ -283,6 +292,8 @@ uv run pytest tests/ -v
    - Delete board/card
    - View board dashboard with charts
    - View general dashboard
+   - View global board (all cards across boards grouped by column)
+   - Verify card borders change color by column
 
 ### Manual Verification
 
