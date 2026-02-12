@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { DndContext, closestCorners, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { arrayMove } from '@dnd-kit/sortable';
 import { getBoard, createCard, deleteCard, moveCard, getBoardDashboard } from '../services/api';
 import Column from '../components/Column';
 import CardDetailModal from '../components/CardDetailModal';
@@ -51,31 +52,48 @@ export default function BoardDetailPage() {
 
     const handleDragEnd = async (event) => {
         const { active, over } = event;
-        if (!over) return;
+        if (!over || active.id === over.id) return;
 
         const activeCard = active.data?.current?.card;
         if (!activeCard) return;
 
-        // Determine target column
         let targetColumnId;
-        let targetPosition = 0;
+        let targetPosition;
 
         if (over.data?.current?.type === 'column') {
+            // Dropped on a column directly → append at end
             targetColumnId = over.id;
-            // Place at end of column
             const targetCol = board.columns.find((c) => c.id === targetColumnId);
-            targetPosition = targetCol?.cards?.length || 0;
+            const cards = targetCol?.cards || [];
+            // If moving to same column, don't count the dragged card
+            targetPosition = activeCard.column_id === targetColumnId
+                ? cards.length - 1
+                : cards.length;
         } else if (over.data?.current?.type === 'card') {
+            // Dropped on another card → take its position
             const overCard = over.data.current.card;
             targetColumnId = overCard.column_id;
-            targetPosition = overCard.position;
+
+            if (activeCard.column_id === targetColumnId) {
+                // Same column reorder: use the over card's current position
+                targetPosition = overCard.position;
+            } else {
+                // Cross-column: insert at the over card's position
+                targetPosition = overCard.position;
+            }
         } else {
             targetColumnId = over.id;
+            targetPosition = 0;
         }
 
+        // Skip no-op moves
         if (activeCard.column_id === targetColumnId && activeCard.position === targetPosition) return;
 
-        await moveCard(activeCard.id, { column_id: targetColumnId, position: targetPosition });
+        try {
+            await moveCard(activeCard.id, { column_id: targetColumnId, position: targetPosition });
+        } catch (err) {
+            console.error('Move failed:', err);
+        }
         fetchBoard();
     };
 

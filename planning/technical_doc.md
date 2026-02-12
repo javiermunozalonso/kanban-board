@@ -129,7 +129,7 @@ Every change to a `Card`'s mutable fields (`title`, `description`, `column_id`, 
 | `POST` | `/api/columns/{id}/cards` | `{title, description?}` | `Card` | Create card |
 | `GET` | `/api/cards/{id}` | — | `Card` + audit | Card with audit log |
 | `PUT` | `/api/cards/{id}` | `{title?, description?}` | `Card` | Update card |
-| `PUT` | `/api/cards/{id}/move` | `{column_id, position}` | `Card` | Move card |
+| `PUT` | `/api/cards/{id}/move` | `{column_id, position}` | `Card` | Move card to column/position, shifting others |
 | `DELETE` | `/api/cards/{id}` | — | `204` | Delete card |
 
 ### 3.4 Dashboard
@@ -195,7 +195,8 @@ graph TD
 
 ### Key Behaviors
 
-- **Drag & Drop**: `@dnd-kit` — cards draggable between columns; columns reorderable
+- **Drag & Drop**: `@dnd-kit` — cards draggable between columns and reorderable within the same column (up/down)
+- **Position management**: Backend automatically shifts other cards' positions when a card is moved or reordered
 - **Column collapse**: click header chevron → hides card list, shows card count badge
 - **Column color coding**: each column type has a distinct accent color (purple, blue, green, red, gray) applied to column headers and card left borders
 - **Audit trail**: `CardDetailModal` shows timestamped change log

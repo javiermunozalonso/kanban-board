@@ -61,6 +61,8 @@
 
 - [x] Card component inside columns
 - [x] Drag & drop between columns
+- [x] Drag & drop reorder within same column (up/down)
+- [x] Backend position shifting on card move
 - [x] Card creation form
 - [x] Card detail / edit view
 - [x] Card audit trail view

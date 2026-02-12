@@ -8,7 +8,6 @@ from sqlalchemy.orm import selectinload
 from app.database import get_db
 from app.models import Card, CardAuditLog, Column
 from app.schemas import (
-    AuditLogResponse,
     CardCreate,
     CardDetailResponse,
     CardMove,
@@ -113,7 +112,7 @@ async def update_card(
 async def move_card(
     card_id: str, data: CardMove, db: AsyncSession = Depends(get_db)
 ):
-    """Move a card to a different column and/or position."""
+    """Move a card to a different column and/or position, shifting others."""
     result = await db.execute(select(Card).where(Card.id == card_id))
     card = result.scalar_one_or_none()
     if not card:
@@ -125,26 +124,86 @@ async def move_card(
     if not target_col:
         raise HTTPException(status_code=404, detail="Target column not found")
 
-    # Track column change
-    if card.column_id != data.column_id:
-        # Get source column title for audit
+    old_column_id = card.column_id
+    old_position = card.position
+    new_column_id = data.column_id
+    new_position = data.position
+
+    moving_across_columns = old_column_id != new_column_id
+
+    if moving_across_columns:
+        # --- Cross-column move ---
+        # 1. Close the gap in the source column
+        source_cards = await db.execute(
+            select(Card)
+            .where(Card.column_id == old_column_id, Card.position > old_position)
+            .order_by(Card.position)
+        )
+        for c in source_cards.scalars().all():
+            c.position -= 1
+
+        # 2. Open a gap in the target column
+        target_cards = await db.execute(
+            select(Card)
+            .where(Card.column_id == new_column_id, Card.position >= new_position)
+            .order_by(Card.position.desc())
+        )
+        for c in target_cards.scalars().all():
+            c.position += 1
+
+        # 3. Audit column change
         src_result = await db.execute(
-            select(Column).where(Column.id == card.column_id)
+            select(Column).where(Column.id == old_column_id)
         )
         src_col = src_result.scalar_one()
         audit = _create_audit_log(
             card.id, "column", src_col.title, target_col.title
         )
         db.add(audit)
-        card.column_id = data.column_id
 
-    # Track position change
-    if card.position != data.position:
+        card.column_id = new_column_id
+        card.position = new_position
+
+    else:
+        # --- Same-column reorder ---
+        if old_position == new_position:
+            return card
+
+        if old_position < new_position:
+            # Moving down: shift cards in between up by 1
+            between = await db.execute(
+                select(Card)
+                .where(
+                    Card.column_id == old_column_id,
+                    Card.position > old_position,
+                    Card.position <= new_position,
+                )
+                .order_by(Card.position)
+            )
+            for c in between.scalars().all():
+                c.position -= 1
+        else:
+            # Moving up: shift cards in between down by 1
+            between = await db.execute(
+                select(Card)
+                .where(
+                    Card.column_id == old_column_id,
+                    Card.position >= new_position,
+                    Card.position < old_position,
+                )
+                .order_by(Card.position.desc())
+            )
+            for c in between.scalars().all():
+                c.position += 1
+
+        card.position = new_position
+
+    # Audit position change
+    if old_position != new_position or moving_across_columns:
         audit = _create_audit_log(
-            card.id, "position", str(card.position), str(data.position)
+            card.id, "position", str(old_position), str(new_position)
         )
         db.add(audit)
-        card.position = data.position
 
     await db.flush()
     return card

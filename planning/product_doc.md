@@ -25,6 +25,7 @@ A lightweight, self-hosted Kanban board application that enables individuals and
 
 - Cards represent individual tasks or work items
 - Drag and drop cards between columns to update their status
+- Drag and drop cards within the same column to reorder (up/down)
 - Edit card title and description inline
 - Delete cards that are no longer relevant
 
