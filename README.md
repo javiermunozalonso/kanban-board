@@ -36,6 +36,20 @@ uv sync
 uv run kanban-mcp
 ```
 
+## Unified Startup (Tmux)
+
+To launch **Backend**, **Frontend**, and **MCP Tool** simultaneously in a split-pane tmux session:
+
+```bash
+./start_stack.sh
+```
+
+**Commands:**
+
+- **Stop all**: `tmux kill-session -t kanban-stack`
+- **Detach**: `Ctrl+b` then `d`
+- **Re-attach**: `./start_stack.sh` or `tmux attach -t kanban-stack`
+
 ## Documentation
 
 - [Implementation Plan](planning/implementation_plan.md)
