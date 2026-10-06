@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+import os
 from typing import Any
 
 import httpx
@@ -9,7 +10,7 @@ from mcp.server import Server
 from mcp.server.stdio import stdio_server
 from mcp.types import TextContent, Tool
 
-API_BASE = "http://localhost:8000/api"
+API_BASE = os.environ.get("KANBAN_API_BASE", "http://localhost:8000/api")
 
 server = Server("kanban-mcp")
 client = httpx.AsyncClient(base_url=API_BASE, timeout=30.0)
