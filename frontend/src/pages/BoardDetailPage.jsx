@@ -23,6 +23,7 @@ export default function BoardDetailPage() {
         const data = await getBoard(boardId);
         setBoard(data);
         setLoading(false);
+        return data;
     }, [boardId]);
 
     const fetchDashboard = useCallback(async () => {
@@ -133,6 +134,8 @@ export default function BoardDetailPage() {
             {selectedCardId && (
                 <CardDetailModal
                     cardId={selectedCardId}
+                    boardId={boardId}
+                    columns={board.columns || []}
                     onClose={() => setSelectedCardId(null)}
                     onUpdate={fetchBoard}
                 />
