@@ -6,13 +6,16 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.database import get_db
-from app.models import Card, CardAuditLog, Column
+from app.models import Card, CardAuditLog, CardObservation, Column
 from app.schemas import (
     CardCreate,
     CardDetailResponse,
     CardMove,
     CardResponse,
     CardUpdate,
+    CardObservationCreate,
+    CardObservationResponse,
+    CardObservationUpdate,
 )
 
 router = APIRouter(tags=["cards"])
@@ -80,6 +83,91 @@ async def get_card(card_id: str, db: AsyncSession = Depends(get_db)):
     if not card:
         raise HTTPException(status_code=404, detail="Card not found")
     return card
+
+
+@router.get(
+    "/api/cards/{card_id}/observations",
+    response_model=list[CardObservationResponse],
+)
+async def list_card_observations(card_id: str, db: AsyncSession = Depends(get_db)):
+    """List a card's observations, most recently updated first."""
+    card_result = await db.execute(select(Card.id).where(Card.id == card_id))
+    if card_result.scalar_one_or_none() is None:
+        raise HTTPException(status_code=404, detail="Card not found")
+
+    result = await db.execute(
+        select(CardObservation)
+        .where(CardObservation.card_id == card_id)
+        .order_by(CardObservation.updated_at.desc())
+    )
+    return result.scalars().all()
+
+
+@router.post(
+    "/api/cards/{card_id}/observations",
+    response_model=CardObservationResponse,
+    status_code=201,
+)
+async def create_card_observation(
+    card_id: str,
+    data: CardObservationCreate,
+    db: AsyncSession = Depends(get_db),
+):
+    """Create a manual observation without adding an audit event."""
+    card_result = await db.execute(select(Card.id).where(Card.id == card_id))
+    if card_result.scalar_one_or_none() is None:
+        raise HTTPException(status_code=404, detail="Card not found")
+
+    observation = CardObservation(card_id=card_id, content=data.content)
+    db.add(observation)
+    await db.flush()
+    return observation
+
+
+@router.put(
+    "/api/cards/{card_id}/observations/{observation_id}",
+    response_model=CardObservationResponse,
+)
+async def update_card_observation(
+    card_id: str,
+    observation_id: str,
+    data: CardObservationUpdate,
+    db: AsyncSession = Depends(get_db),
+):
+    """Edit an observation belonging to the specified card."""
+    result = await db.execute(
+        select(CardObservation).where(
+            CardObservation.id == observation_id,
+            CardObservation.card_id == card_id,
+        )
+    )
+    observation = result.scalar_one_or_none()
+    if observation is None:
+        raise HTTPException(status_code=404, detail="Observation not found")
+
+    observation.content = data.content
+    await db.flush()
+    return observation
+
+
+@router.delete(
+    "/api/cards/{card_id}/observations/{observation_id}", status_code=204
+)
+async def delete_card_observation(
+    card_id: str, observation_id: str, db: AsyncSession = Depends(get_db)
+):
+    """Delete an observation belonging to the specified card."""
+    result = await db.execute(
+        select(CardObservation).where(
+            CardObservation.id == observation_id,
+            CardObservation.card_id == card_id,
+        )
+    )
+    observation = result.scalar_one_or_none()
+    if observation is None:
+        raise HTTPException(status_code=404, detail="Observation not found")
+
+    await db.delete(observation)
 
 
 @router.put("/api/cards/{card_id}", response_model=CardResponse)

@@ -99,6 +99,26 @@ class CardDetailResponse(CardResponse):
     audit_logs: list["AuditLogResponse"] = []
 
 
+# --- Card Observation ---
+
+class CardObservationCreate(BaseModel):
+    content: str
+
+
+class CardObservationUpdate(BaseModel):
+    content: str
+
+
+class CardObservationResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    card_id: str
+    content: str
+    created_at: datetime
+    updated_at: datetime
+
+
 # --- Audit Log ---
 
 class AuditLogResponse(BaseModel):

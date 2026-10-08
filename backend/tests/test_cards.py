@@ -1,5 +1,7 @@
 """Integration tests for Card endpoints."""
 
+from datetime import datetime
+
 import pytest
 from httpx import AsyncClient
 from sqlalchemy import inspect
@@ -106,3 +108,58 @@ async def test_card_observation_model_is_registered(database_engine):
             lambda sync_connection: inspect(sync_connection).has_table("card_observations")
         )
     assert table_exists
+
+
+@pytest.mark.asyncio
+async def test_card_observation_crud_is_separate_from_audit(client: AsyncClient):
+    """Observation operations persist independently from the audit trail."""
+    _, card = await _create_board_with_card(client)
+    path = f"/api/cards/{card['id']}/observations"
+
+    created = await client.post(path, json={"content": "First observation"})
+    assert created.status_code == 201
+    observation = created.json()
+    assert observation["content"] == "First observation"
+    assert observation["card_id"] == card["id"]
+    assert observation["created_at"]
+    assert observation["updated_at"]
+
+    updated = await client.put(
+        f"{path}/{observation['id']}", json={"content": "Edited observation"}
+    )
+    assert updated.status_code == 200
+    assert updated.json()["content"] == "Edited observation"
+    updated_created_at = datetime.fromisoformat(updated.json()["created_at"])
+    original_created_at = datetime.fromisoformat(observation["created_at"])
+    assert updated_created_at.replace(tzinfo=None) == original_created_at.replace(
+        tzinfo=None
+    )
+
+    listed = await client.get(path)
+    assert listed.status_code == 200
+    assert [item["id"] for item in listed.json()] == [observation["id"]]
+
+    detail = await client.get(f"/api/cards/{card['id']}")
+    assert detail.json()["audit_logs"] == detail.json()["audit_logs"][:1]
+
+    deleted = await client.delete(f"{path}/{observation['id']}")
+    assert deleted.status_code == 204
+    assert (await client.get(path)).json() == []
+
+
+@pytest.mark.asyncio
+async def test_card_observation_endpoints_return_404_for_missing_entities(
+    client: AsyncClient,
+):
+    """Observation endpoints report missing cards and observations as 404."""
+    missing_card_path = "/api/cards/missing/observations"
+    assert (await client.get(missing_card_path)).status_code == 404
+    assert (
+        await client.post(missing_card_path, json={"content": "orphan"})
+    ).status_code == 404
+    assert (
+        await client.put(
+            f"{missing_card_path}/missing", json={"content": "update"}
+        )
+    ).status_code == 404
+    assert (await client.delete(f"{missing_card_path}/missing")).status_code == 404
