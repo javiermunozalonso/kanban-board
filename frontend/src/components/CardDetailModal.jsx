@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getBoard, getCard, moveCard, updateCard } from '../services/api';
+import AuditModal from './AuditModal';
 import ObservationsModal from './ObservationsModal';
 
 export default function CardDetailModal({ cardId, boardId, columns = [], onClose, onUpdate }) {
@@ -14,6 +15,7 @@ export default function CardDetailModal({ cardId, boardId, columns = [], onClose
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
     const [showObservations, setShowObservations] = useState(false);
+    const [showAudit, setShowAudit] = useState(false);
 
     useEffect(() => {
         getCard(cardId).then((data) => {
@@ -173,32 +175,13 @@ export default function CardDetailModal({ cardId, boardId, columns = [], onClose
                             </button>
                         </div>
 
-                        <div>
-                            <h3 style={{ fontSize: '16px', marginBottom: '12px', color: 'var(--text-secondary)' }}>
-                                📜 Audit Trail
-                            </h3>
-                            {card.audit_logs?.length > 0 ? (
-                                <div className="audit-timeline">
-                                    {card.audit_logs.map((log) => (
-                                        <div key={log.id} className="audit-entry">
-                                            <div className="audit-dot" />
-                                            <div>
-                                                <div>
-                                                    <span className="audit-field">{log.field_changed}</span>
-                                                    {log.old_value && <span style={{ color: 'var(--text-muted)' }}> from "{log.old_value}"</span>}
-                                                    {log.new_value && <span> → "{log.new_value}"</span>}
-                                                </div>
-                                                <div className="audit-time">
-                                                    {new Date(log.changed_at).toLocaleString()}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <p style={{ color: 'var(--text-muted)', fontSize: '13px' }}>No audit entries yet.</p>
-                            )}
-                        </div>
+                        <button
+                            className="btn btn-secondary"
+                            style={{ marginTop: '12px', marginLeft: '8px' }}
+                            onClick={() => setShowAudit(true)}
+                        >
+                            📜 Audit history
+                        </button>
                     </>
                 )}
             </div>
@@ -206,6 +189,12 @@ export default function CardDetailModal({ cardId, boardId, columns = [], onClose
                 <ObservationsModal
                     cardId={cardId}
                     onClose={() => setShowObservations(false)}
+                />
+            )}
+            {showAudit && (
+                <AuditModal
+                    auditLogs={card.audit_logs || []}
+                    onClose={() => setShowAudit(false)}
                 />
             )}
         </div>

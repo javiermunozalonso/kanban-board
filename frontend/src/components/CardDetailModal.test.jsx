@@ -111,7 +111,12 @@ describe('CardDetailModal column editing', () => {
         }));
         expect(updateCard).not.toHaveBeenCalled();
         expect(onUpdate).toHaveBeenCalledOnce();
+        fireEvent.click(screen.getByRole('button', { name: /audit history/i }));
+        expect(await screen.findByRole('dialog', { name: 'Card audit history' })).toBeTruthy();
         expect(await screen.findByText('column')).toBeTruthy();
+        expect(screen.getByText('Previous value')).toBeTruthy();
+        expect(screen.getByText('To Do')).toBeTruthy();
+        expect(screen.getByText('In Progress')).toBeTruthy();
     });
 
     it('saves title and description together with a column change', async () => {

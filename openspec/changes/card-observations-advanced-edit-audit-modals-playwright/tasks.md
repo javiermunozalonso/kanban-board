@@ -8,8 +8,8 @@
 
 - [x] 2.1 Añadir métodos de API y UI para consultar, crear, editar y eliminar observaciones en un modal independiente.
 - [x] 2.2 Añadir edición avanzada en el detalle de tarjeta, excluyendo ID y timestamps controlados por sistema.
-- [ ] 2.3 Añadir un modal independiente para consultar el historial detallado de auditoría.
-- [ ] 2.4 Cubrir componentes y flujos con pruebas unitarias/integración del frontend.
+- [x] 2.3 Añadir un modal independiente para consultar el historial detallado de auditoría.
+- [x] 2.4 Cubrir componentes y flujos con pruebas unitarias/integración del frontend.
 
 ## 3. E2E con Playwright
 
