@@ -7,6 +7,8 @@ export default function CardDetailModal({ cardId, boardId, columns = [], onClose
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [columnId, setColumnId] = useState('');
+    const [position, setPosition] = useState(0);
+    const [positionTouched, setPositionTouched] = useState(false);
     const [editing, setEditing] = useState(false);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -19,6 +21,8 @@ export default function CardDetailModal({ cardId, boardId, columns = [], onClose
             setTitle(data.title);
             setDescription(data.description || '');
             setColumnId(data.column_id);
+            setPosition(data.position ?? 0);
+            setPositionTouched(false);
             setLoading(false);
         });
     }, [cardId]);
@@ -28,8 +32,10 @@ export default function CardDetailModal({ cardId, boardId, columns = [], onClose
         if (title !== card.title) updates.title = title;
         if (description !== (card.description || '')) updates.description = description;
         const columnChanged = columnId !== card.column_id;
+        const nextPosition = Number(position);
+        const positionChanged = nextPosition !== (card.position ?? 0);
 
-        if (Object.keys(updates).length === 0 && !columnChanged) {
+        if (Object.keys(updates).length === 0 && !columnChanged && !positionChanged) {
             setEditing(false);
             return;
         }
@@ -49,10 +55,12 @@ export default function CardDetailModal({ cardId, boardId, columns = [], onClose
 
             const results = await Promise.allSettled([
                 Object.keys(updates).length > 0 ? updateCard(cardId, updates) : Promise.resolve(),
-                columnChanged
+                columnChanged || positionChanged
                     ? moveCard(cardId, {
                         column_id: columnId,
-                        position: targetColumn.cards?.length || 0,
+                        position: columnChanged && !positionTouched
+                            ? targetColumn.cards?.length || 0
+                            : nextPosition,
                     })
                     : Promise.resolve(),
             ]);
@@ -64,6 +72,8 @@ export default function CardDetailModal({ cardId, boardId, columns = [], onClose
             setTitle(updated.title);
             setDescription(updated.description || '');
             setColumnId(updated.column_id);
+            setPosition(updated.position ?? 0);
+            setPositionTouched(false);
             setEditing(false);
         } catch (saveError) {
             setError(saveError.message === 'The selected column is no longer available.'
@@ -76,6 +86,8 @@ export default function CardDetailModal({ cardId, boardId, columns = [], onClose
                 setTitle(cardResult.value.title);
                 setDescription(cardResult.value.description || '');
                 setColumnId(cardResult.value.column_id);
+                setPosition(cardResult.value.position ?? 0);
+                setPositionTouched(false);
             }
         } finally {
             setSaving(false);
@@ -119,6 +131,21 @@ export default function CardDetailModal({ cardId, boardId, columns = [], onClose
                                     <option key={column.id} value={column.id}>{column.title}</option>
                                 ))}
                             </select>
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="card-position">Position</label>
+                            <input
+                                id="card-position"
+                                type="number"
+                                min="0"
+                                step="1"
+                                value={position}
+                                onChange={(e) => {
+                                    setPosition(e.target.value);
+                                    setPositionTouched(true);
+                                }}
+                                disabled={saving}
+                            />
                         </div>
                         <div className="modal-actions">
                             <button className="btn btn-secondary" onClick={() => setEditing(false)} disabled={saving}>Cancel</button>

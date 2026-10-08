@@ -7,7 +7,7 @@
 ## 2. Frontend: detalle, observaciones y auditoría
 
 - [x] 2.1 Añadir métodos de API y UI para consultar, crear, editar y eliminar observaciones en un modal independiente.
-- [ ] 2.2 Añadir edición avanzada en el detalle de tarjeta, excluyendo ID y timestamps controlados por sistema.
+- [x] 2.2 Añadir edición avanzada en el detalle de tarjeta, excluyendo ID y timestamps controlados por sistema.
 - [ ] 2.3 Añadir un modal independiente para consultar el historial detallado de auditoría.
 - [ ] 2.4 Cubrir componentes y flujos con pruebas unitarias/integración del frontend.
 

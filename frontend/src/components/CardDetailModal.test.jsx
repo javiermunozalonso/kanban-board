@@ -22,6 +22,7 @@ const columns = [
 const card = {
     id: 'card-1',
     column_id: 'todo',
+    position: 0,
     title: 'Write tests',
     description: 'Cover card movement',
     audit_logs: [],
@@ -67,6 +68,21 @@ describe('CardDetailModal column editing', () => {
         expect(columnSelect.value).toBe('todo');
         expect(screen.getByRole('option', { name: 'To Do' })).toBeTruthy();
         expect(screen.getByRole('option', { name: 'In Progress' })).toBeTruthy();
+    });
+
+    it('edits position without exposing system-managed fields', async () => {
+        renderModal();
+        fireEvent.click(await screen.findByRole('button', { name: /edit/i }));
+
+        expect(screen.getByLabelText('Position').value).toBe('0');
+        expect(screen.queryByLabelText(/card id|created at|updated at/i)).toBeNull();
+        fireEvent.change(screen.getByLabelText('Position'), { target: { value: '2' } });
+        fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+
+        await waitFor(() => expect(moveCard).toHaveBeenCalledWith('card-1', {
+            column_id: 'todo',
+            position: 2,
+        }));
     });
 
     it('moves the card to the end of the selected column and refreshes its audit trail', async () => {
