@@ -421,6 +421,12 @@ textarea { resize: vertical; min-height: 80px; }
   opacity: 0.5;
   cursor: grabbing;
 }
+.card-item.card-drag-overlay {
+  opacity: 1;
+  cursor: grabbing;
+  pointer-events: none;
+  box-shadow: var(--shadow-sm);
+}
 
 .card-item-title {
   font-size: 14px;

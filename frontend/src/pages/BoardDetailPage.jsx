@@ -1,11 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { DndContext, closestCorners, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { DndContext, DragOverlay, closestCorners, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
 import { getBoard, createCard, deleteCard, moveCard, getBoardDashboard } from '../services/api';
 import Column from '../components/Column';
 import CardDetailModal from '../components/CardDetailModal';
 import BoardDashboard from '../components/BoardDashboard';
+import { getColumnColor } from '../services/columnColors';
+
+const dragAutoScrollOptions = { threshold: { x: 0.08, y: 0.2 } };
 
 export default function BoardDetailPage() {
     const { boardId } = useParams();
@@ -13,6 +16,7 @@ export default function BoardDetailPage() {
     const [dashboard, setDashboard] = useState(null);
     const [showDashboard, setShowDashboard] = useState(false);
     const [selectedCardId, setSelectedCardId] = useState(null);
+    const [activeCard, setActiveCard] = useState(null);
     const [loading, setLoading] = useState(true);
 
     const sensors = useSensors(
@@ -51,7 +55,16 @@ export default function BoardDetailPage() {
         }
     };
 
+    const handleDragStart = ({ active }) => {
+        setActiveCard(active.data?.current?.card || null);
+    };
+
+    const handleDragCancel = () => {
+        setActiveCard(null);
+    };
+
     const handleDragEnd = async (event) => {
+        setActiveCard(null);
         const { active, over } = event;
         if (!over || active.id === over.id) return;
 
@@ -101,6 +114,11 @@ export default function BoardDetailPage() {
     if (loading) return <div className="loading">Loading board...</div>;
     if (!board) return <div className="loading">Board not found</div>;
 
+    const activeColumn = activeCard
+        ? board.columns.find((column) => column.id === activeCard.column_id)
+        : null;
+    const activeColumnColor = activeColumn ? getColumnColor(activeColumn.title).border : undefined;
+
     return (
         <div style={{ padding: '24px 32px' }}>
             <div className="board-detail-header">
@@ -117,7 +135,14 @@ export default function BoardDetailPage() {
 
             {showDashboard && <BoardDashboard dashboard={dashboard} />}
 
-            <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
+            <DndContext
+                sensors={sensors}
+                collisionDetection={closestCorners}
+                autoScroll={dragAutoScrollOptions}
+                onDragStart={handleDragStart}
+                onDragEnd={handleDragEnd}
+                onDragCancel={handleDragCancel}
+            >
                 <div className="kanban-board">
                     {(board.columns || []).map((col) => (
                         <Column
@@ -129,6 +154,17 @@ export default function BoardDetailPage() {
                         />
                     ))}
                 </div>
+                <DragOverlay dropAnimation={null}>
+                    {activeCard && (
+                        <div
+                            className="card-item card-drag-overlay"
+                            style={{ borderLeft: activeColumnColor ? `3px solid ${activeColumnColor}` : undefined }}
+                        >
+                            <div className="card-item-title">{activeCard.title}</div>
+                            {activeCard.description && <div className="card-item-desc">{activeCard.description}</div>}
+                        </div>
+                    )}
+                </DragOverlay>
             </DndContext>
 
             {selectedCardId && (
