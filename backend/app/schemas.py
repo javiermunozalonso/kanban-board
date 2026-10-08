@@ -76,6 +76,8 @@ class CardCreate(BaseModel):
 class CardUpdate(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
+    column_id: Optional[str] = None
+    position: Optional[int] = None
 
 
 class CardMove(BaseModel):

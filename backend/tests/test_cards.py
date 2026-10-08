@@ -163,3 +163,42 @@ async def test_card_observation_endpoints_return_404_for_missing_entities(
         )
     ).status_code == 404
     assert (await client.delete(f"{missing_card_path}/missing")).status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_update_card_functional_fields_without_changing_system_fields(
+    client: AsyncClient,
+):
+    """Advanced card updates can move a card without editing ID or timestamps."""
+    board, card = await _create_board_with_card(client)
+    source_column_id = card["column_id"]
+    second = await client.post(
+        f"/api/columns/{source_column_id}/cards", json={"title": "Second"}
+    )
+    target_column = next(
+        column for column in board["columns"] if column["title"] == "WORK IN PROGRESS"
+    )
+
+    response = await client.put(
+        f"/api/cards/{card['id']}",
+        json={
+            "column_id": target_column["id"],
+            "position": 0,
+            "id": "must-not-change",
+            "created_at": "2000-01-01T00:00:00Z",
+            "updated_at": "2000-01-01T00:00:00Z",
+        },
+    )
+    assert response.status_code == 200
+    assert response.json()["id"] == card["id"]
+    assert response.json()["column_id"] == target_column["id"]
+    assert response.json()["position"] == 0
+    assert datetime.fromisoformat(response.json()["created_at"]).replace(
+        tzinfo=None
+    ) == datetime.fromisoformat(card["created_at"]).replace(tzinfo=None)
+
+    shifted = await client.get(f"/api/cards/{second.json()['id']}")
+    assert shifted.json()["position"] == 0
+    detail = await client.get(f"/api/cards/{card['id']}")
+    changed_fields = {item["field_changed"] for item in detail.json()["audit_logs"]}
+    assert {"column", "position"}.issubset(changed_fields)

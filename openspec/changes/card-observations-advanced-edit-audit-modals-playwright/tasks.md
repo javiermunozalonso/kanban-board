@@ -2,7 +2,7 @@
 
 - [x] 1.1 Añadir el modelo de observación vinculado a tarjeta, fechas, relación y borrado en cascada; verificar su creación en la base de pruebas y actualizar los tests de modelo si existen.
 - [x] 1.2 Añadir endpoints CRUD de observaciones con validación de existencia y orden temporal; verificar que no generan eventos de auditoría.
-- [ ] 1.3 Ampliar la actualización de tarjetas para permitir todos los campos funcionales excepto ID y fechas, registrando cambios en auditoría.
+- [x] 1.3 Ampliar la actualización de tarjetas para permitir todos los campos funcionales excepto ID y fechas, registrando cambios en auditoría.
 
 ## 2. Frontend: detalle, observaciones y auditoría
 

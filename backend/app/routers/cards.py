@@ -174,7 +174,7 @@ async def delete_card_observation(
 async def update_card(
     card_id: str, data: CardUpdate, db: AsyncSession = Depends(get_db)
 ):
-    """Update card title and/or description."""
+    """Update a card's functional fields while preserving system-managed data."""
     result = await db.execute(select(Card).where(Card.id == card_id))
     card = result.scalar_one_or_none()
     if not card:
@@ -191,6 +191,28 @@ async def update_card(
         )
         db.add(audit)
         card.description = data.description
+
+    if data.column_id is not None or data.position is not None:
+        target_column_id = data.column_id or card.column_id
+        target_position = data.position
+        if target_position is None and target_column_id != card.column_id:
+            position_result = await db.execute(
+                select(Card.position)
+                .where(Card.column_id == target_column_id)
+                .order_by(Card.position.desc())
+                .limit(1)
+            )
+            max_position = position_result.scalar_one_or_none()
+            target_position = max_position + 1 if max_position is not None else 0
+        elif target_position is None:
+            target_position = card.position
+
+        if target_column_id != card.column_id or target_position != card.position:
+            return await move_card(
+                card_id,
+                CardMove(column_id=target_column_id, position=target_position),
+                db,
+            )
 
     await db.flush()
     return card
