@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getBoard, getCard, moveCard, updateCard } from '../services/api';
+import ObservationsModal from './ObservationsModal';
 
 export default function CardDetailModal({ cardId, boardId, columns = [], onClose, onUpdate }) {
     const [card, setCard] = useState(null);
@@ -10,6 +11,7 @@ export default function CardDetailModal({ cardId, boardId, columns = [], onClose
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
+    const [showObservations, setShowObservations] = useState(false);
 
     useEffect(() => {
         getCard(cardId).then((data) => {
@@ -135,6 +137,13 @@ export default function CardDetailModal({ cardId, boardId, columns = [], onClose
                             <button className="btn btn-secondary" style={{ marginTop: '12px' }} onClick={() => setEditing(true)}>
                                 ✏️ Edit
                             </button>
+                            <button
+                                className="btn btn-secondary"
+                                style={{ marginTop: '12px', marginLeft: '8px' }}
+                                onClick={() => setShowObservations(true)}
+                            >
+                                📝 Observations
+                            </button>
                         </div>
 
                         <div>
@@ -166,6 +175,12 @@ export default function CardDetailModal({ cardId, boardId, columns = [], onClose
                     </>
                 )}
             </div>
+            {showObservations && (
+                <ObservationsModal
+                    cardId={cardId}
+                    onClose={() => setShowObservations(false)}
+                />
+            )}
         </div>
     );
 }

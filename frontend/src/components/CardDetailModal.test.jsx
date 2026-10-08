@@ -1,6 +1,6 @@
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { getBoard, getCard, moveCard, updateCard } from '../services/api';
+import { getBoard, getCard, listCardObservations, moveCard, updateCard } from '../services/api';
 import CardDetailModal from './CardDetailModal';
 
 vi.mock('../services/api', () => ({
@@ -8,6 +8,10 @@ vi.mock('../services/api', () => ({
     getCard: vi.fn(),
     moveCard: vi.fn(),
     updateCard: vi.fn(),
+    listCardObservations: vi.fn(),
+    createCardObservation: vi.fn(),
+    updateCardObservation: vi.fn(),
+    deleteCardObservation: vi.fn(),
 }));
 
 const columns = [
@@ -41,11 +45,20 @@ beforeEach(() => {
     getBoard.mockResolvedValue({ id: 'board-1', columns });
     moveCard.mockResolvedValue({});
     updateCard.mockResolvedValue({});
+    listCardObservations.mockResolvedValue([]);
 });
 
 afterEach(cleanup);
 
 describe('CardDetailModal column editing', () => {
+    it('opens observations in their own modal from the card detail', async () => {
+        renderModal();
+        fireEvent.click(await screen.findByRole('button', { name: /observations/i }));
+
+        expect(await screen.findByRole('dialog', { name: 'Card observations' })).toBeTruthy();
+        expect(listCardObservations).toHaveBeenCalledWith('card-1');
+    });
+
     it('shows the current column selected and the board columns as options', async () => {
         renderModal();
         fireEvent.click(await screen.findByRole('button', { name: /edit/i }));

@@ -49,6 +49,18 @@ export const getCard = (id) =>
 export const updateCard = (id, data) =>
   api.put(`/cards/${id}`, data).then((r) => r.data);
 
+export const listCardObservations = (cardId) =>
+  api.get(`/cards/${cardId}/observations`).then((r) => r.data);
+
+export const createCardObservation = (cardId, data) =>
+  api.post(`/cards/${cardId}/observations`, data).then((r) => r.data);
+
+export const updateCardObservation = (cardId, observationId, data) =>
+  api.put(`/cards/${cardId}/observations/${observationId}`, data).then((r) => r.data);
+
+export const deleteCardObservation = (cardId, observationId) =>
+  api.delete(`/cards/${cardId}/observations/${observationId}`);
+
 export const moveCard = (id, data) =>
   api.put(`/cards/${id}/move`, data).then((r) => r.data);
 
