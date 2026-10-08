@@ -13,6 +13,6 @@
 
 ## 3. E2E con Playwright
 
-- [ ] 3.1 Incorporar Playwright y configurar la ejecución de pruebas de navegador según la estructura del proyecto.
-- [ ] 3.2 Añadir casos E2E para observaciones, edición avanzada y consulta de auditoría.
-- [ ] 3.3 Ejecutar validaciones completas y documentar los comandos/resultados.
+- [x] 3.1 Incorporar Playwright y configurar la ejecución de pruebas de navegador según la estructura del proyecto.
+- [x] 3.2 Añadir casos E2E para observaciones, edición avanzada y consulta de auditoría.
+- [x] 3.3 Ejecutar validaciones completas y documentar los comandos/resultados.
