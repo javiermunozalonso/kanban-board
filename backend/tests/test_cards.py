@@ -2,6 +2,10 @@
 
 import pytest
 from httpx import AsyncClient
+from sqlalchemy import inspect
+
+from app.database import Base
+from app.models import Card
 
 
 async def _create_board_with_card(client: AsyncClient) -> tuple[dict, dict]:
@@ -88,3 +92,17 @@ async def test_delete_card(client: AsyncClient):
 
     resp = await client.get(f"/api/cards/{card['id']}")
     assert resp.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_card_observation_model_is_registered(database_engine):
+    """Observations have their own table and cascade with their card."""
+    assert "card_observations" in Base.metadata.tables
+    assert "observations" in Card.__mapper__.relationships
+    foreign_keys = inspect(Base.metadata.tables["card_observations"]).foreign_keys
+    assert any(fk.ondelete == "CASCADE" for fk in foreign_keys)
+    async with database_engine.connect() as connection:
+        table_exists = await connection.run_sync(
+            lambda sync_connection: inspect(sync_connection).has_table("card_observations")
+        )
+    assert table_exists

@@ -80,6 +80,26 @@ class Card(Base):
         "CardAuditLog", back_populates="card", cascade="all, delete-orphan",
         order_by="CardAuditLog.changed_at.desc()"
     )
+    observations: Mapped[list["CardObservation"]] = relationship(
+        "CardObservation", back_populates="card", cascade="all, delete-orphan",
+        order_by="CardObservation.updated_at.desc()"
+    )
+
+
+class CardObservation(Base):
+    __tablename__ = "card_observations"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    card_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("cards.id", ondelete="CASCADE"), nullable=False
+    )
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=_utcnow, onupdate=_utcnow
+    )
+
+    card: Mapped["Card"] = relationship("Card", back_populates="observations")
 
 
 class CardAuditLog(Base):

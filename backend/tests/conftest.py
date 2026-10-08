@@ -47,3 +47,9 @@ async def client() -> AsyncGenerator[AsyncClient, None]:
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         yield ac
+
+
+@pytest.fixture
+def database_engine():
+    """Expose the isolated test engine for schema assertions."""
+    return test_engine
