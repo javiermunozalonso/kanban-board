@@ -19,4 +19,4 @@
 ## 4. Verificación integrada
 
 - [x] 4.1 Añadir o ampliar pruebas de interfaz que validen los tres formatos y el respeto del filtro, incluidas exportaciones con boards dormidos y `All`; ejecutar las pruebas frontend relevantes.
-- [ ] 4.2 Ejecutar `npm test`, `npm run lint` y `npm run build` en `frontend`; confirmar que pasan y corregir cualquier regresión atribuible al cambio.
+- [x] 4.2 Ejecutar `npm test`, `npm run lint` y `npm run build` en `frontend`; confirmar que pasan y corregir cualquier regresión atribuible al cambio.

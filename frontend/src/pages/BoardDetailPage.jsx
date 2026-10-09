@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { DndContext, DragOverlay, closestCorners, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
-import { arrayMove } from '@dnd-kit/sortable';
 import { getBoard, createCard, deleteCard, moveCard, getBoardDashboard } from '../services/api';
 import Column from '../components/Column';
 import CardDetailModal from '../components/CardDetailModal';
@@ -30,18 +29,23 @@ export default function BoardDetailPage() {
         return data;
     }, [boardId]);
 
-    const fetchDashboard = useCallback(async () => {
-        const data = await getBoardDashboard(boardId);
-        setDashboard(data);
+    useEffect(() => {
+        const loadBoard = async () => {
+            const data = await getBoard(boardId);
+            setBoard(data);
+            setLoading(false);
+        };
+        loadBoard();
     }, [boardId]);
 
     useEffect(() => {
-        fetchBoard();
-    }, [fetchBoard]);
-
-    useEffect(() => {
-        if (showDashboard) fetchDashboard();
-    }, [showDashboard, fetchDashboard]);
+        if (!showDashboard) return;
+        const loadDashboard = async () => {
+            const data = await getBoardDashboard(boardId);
+            setDashboard(data);
+        };
+        loadDashboard();
+    }, [showDashboard, boardId]);
 
     const handleCreateCard = async (columnId, data) => {
         await createCard(columnId, data);

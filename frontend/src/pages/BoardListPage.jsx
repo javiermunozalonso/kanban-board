@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { listBoards, getBoard, createBoard, deleteBoard, updateBoard } from '../services/api';
 import CreateBoardModal from '../components/CreateBoardModal';
@@ -13,14 +13,14 @@ export default function BoardListPage() {
     const [exportError, setExportError] = useState('');
     const navigate = useNavigate();
 
-    const fetchBoards = async () => {
+    const fetchBoards = useCallback(async () => {
         setLoading(true);
         const data = await listBoards(filter);
         setBoards(data);
         setLoading(false);
-    };
+    }, [filter]);
 
-    useEffect(() => { fetchBoards(); }, [filter]);
+    useEffect(() => { fetchBoards(); }, [fetchBoards]);
 
     const handleCreate = async (data) => {
         await createBoard(data);
