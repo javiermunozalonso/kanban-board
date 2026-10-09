@@ -1,13 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { listBoards, createBoard, deleteBoard, updateBoard } from '../services/api';
+import { listBoards, getBoard, createBoard, deleteBoard, updateBoard } from '../services/api';
 import CreateBoardModal from '../components/CreateBoardModal';
+import { createBoardExportWorkbook, flattenBoardTasks, serializeBoardExportJson, serializeBoardTasksCsv } from '../utils/boardExport';
 
 export default function BoardListPage() {
     const [boards, setBoards] = useState([]);
     const [filter, setFilter] = useState(null); // null=all, 'active', 'dormant'
     const [showCreate, setShowCreate] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [exporting, setExporting] = useState(null);
+    const [exportError, setExportError] = useState('');
     const navigate = useNavigate();
 
     const fetchBoards = async () => {
@@ -39,6 +42,47 @@ export default function BoardListPage() {
         fetchBoards();
     };
 
+    const handleExport = async (format) => {
+        const selectedBoards = [...boards];
+        if (selectedBoards.length === 0 || exporting) return;
+
+        setExporting(format);
+        setExportError('');
+        try {
+            const details = await Promise.all(selectedBoards.map((board) => getBoard(board.id)));
+            let content;
+            let mimeType;
+            let extension = format;
+
+            if (format === 'csv') {
+                content = serializeBoardTasksCsv(flattenBoardTasks(details));
+                mimeType = 'text/csv;charset=utf-8';
+            } else if (format === 'json') {
+                content = serializeBoardExportJson(details);
+                mimeType = 'application/json;charset=utf-8';
+            } else {
+                const workbook = await createBoardExportWorkbook(details);
+                content = await workbook.xlsx.writeBuffer();
+                mimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+                extension = 'xlsx';
+            }
+
+            const url = URL.createObjectURL(new Blob([content], { type: mimeType }));
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `boards-${filter || 'all'}.${extension}`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Board export failed:', error);
+            setExportError('Export failed. No file was downloaded; please try again.');
+        } finally {
+            setExporting(null);
+        }
+    };
+
     return (
         <div className="page-container">
             <div className="page-header">
@@ -46,7 +90,23 @@ export default function BoardListPage() {
                 <button className="btn btn-primary" onClick={() => setShowCreate(true)}>
                     + Create Board
                 </button>
+                <div style={{ display: 'flex', gap: '8px' }} aria-label="Export boards">
+                    {['csv', 'xlsx', 'json'].map((format) => (
+                        <button
+                            key={format}
+                            className="btn btn-secondary"
+                            onClick={() => handleExport(format)}
+                            disabled={loading || boards.length === 0 || exporting !== null}
+                            aria-label={`Export ${format.toUpperCase()}`}
+                        >
+                            {exporting === format ? 'Exporting…' : format.toUpperCase()}
+                        </button>
+                    ))}
+                </div>
             </div>
+
+            {exportError && <div role="alert">{exportError}</div>}
+            {exporting && <div role="status">Preparing {exporting.toUpperCase()} export…</div>}
 
             <div className="filter-tabs">
                 <button className={`filter-tab ${filter === null ? 'active' : ''}`} onClick={() => setFilter(null)}>All</button>
