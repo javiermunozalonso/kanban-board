@@ -44,7 +44,7 @@ export default function BoardListPage() {
             <div className="page-header">
                 <h1 className="page-title">📋 My Boards</h1>
                 <button className="btn btn-primary" onClick={() => setShowCreate(true)}>
-                    + New Board
+                    + Create Board
                 </button>
             </div>
 
@@ -61,7 +61,6 @@ export default function BoardListPage() {
                     <div className="empty-state-icon">📦</div>
                     <div className="empty-state-title">No boards yet</div>
                     <div className="empty-state-desc">Create your first board to start organizing your work.</div>
-                    <button className="btn btn-primary" onClick={() => setShowCreate(true)}>+ Create Board</button>
                 </div>
             ) : (
                 <div className="board-grid">
